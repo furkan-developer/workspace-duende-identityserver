@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,5 +23,8 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapGet("/", () => "Hello World!");
+
+app.MapGet("/identity", (ClaimsPrincipal user) => user.Claims.Select(c => new {c.Type, c.Value}))
+    .RequireAuthorization();
 
 app.Run();
