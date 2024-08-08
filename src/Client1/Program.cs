@@ -1,4 +1,5 @@
-﻿using IdentityModel.Client;
+﻿using System.Text.Json;
+using IdentityModel.Client;
 
 async Task<string?> GetAccessTokenWithClientCredentialsGrantAsync(string issuerHost)
 {
@@ -24,7 +25,23 @@ async Task<string?> GetAccessTokenWithClientCredentialsGrantAsync(string issuerH
     return tokenResponse.AccessToken;
 }
 
+
 string? accessToken = await GetAccessTokenWithClientCredentialsGrantAsync("https://localhost:5001");
 
-if(accessToken is null)
+if (accessToken is null)
     throw new Exception("Incoming Access Token is null");
+
+var client = new HttpClient();
+client.SetBearerToken(accessToken);
+
+var response = await client.GetAsync("http://localhost:5245/identity");
+if (!response.IsSuccessStatusCode)
+    System.Console.WriteLine(response.StatusCode);
+
+else
+{
+     var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync()).RootElement;
+    Console.WriteLine(JsonSerializer.Serialize(doc, new JsonSerializerOptions { WriteIndented = true }));
+}
+
+Console.Read();
